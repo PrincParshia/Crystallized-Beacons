@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "crystallized-beacons",
+	"version": "${version}",
+	"name": "Crystallized Beacons",
+	"description": "Make Beacons more reasonable with the help of End Crystals!",
+	"authors": [
+		"PrincParshia, MincraftEinstein"
+	],
+	"license": "All Rights Reserved",
+	"icon": "pack.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"princ.crystallizedbeacons.CrystallizedBeacons"
+		],
+		"client": [
+			"princ.crystallizedbeacons.client.CrystallizedBeaconsClient"
+		]
+	},
+	"mixins": [
+		"crystallized-beacons.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

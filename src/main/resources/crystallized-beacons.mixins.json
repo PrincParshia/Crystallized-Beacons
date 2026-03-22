@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "package": "princ.crystallizedbeacons.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BeaconBlockEntityAccessor",
+    "EndCrystalItemMixin",
+    "EndCrystalMixin"
+  ],
+  "client": [
+    "BeaconRendererMixin",
+    "EndCrystalRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
