@@ -3,13 +3,13 @@
   "package": "princ.crystallizedbeacons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "BeaconBlockEntityAccessor",
-    "EndCrystalItemMixin",
-    "EndCrystalMixin"
+    "world.level.block.entity.BeaconBlockEntityAccessor",
+    "world.item.EndCrystalItemMixin",
+    "world.entity.boss.enderdragon.EndCrystalMixin"
   ],
   "client": [
-    "BeaconRendererMixin",
-    "EndCrystalRendererMixin"
+    "client.renderer.blockentity.BeaconRendererMixin",
+    "client.renderer.entity.EndCrystalRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

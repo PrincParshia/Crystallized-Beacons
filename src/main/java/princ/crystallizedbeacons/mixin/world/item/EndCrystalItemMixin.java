@@ -1,4 +1,4 @@
-package princ.crystallizedbeacons.mixin;
+package princ.crystallizedbeacons.mixin.world.item;
 
 import net.minecraft.world.item.EndCrystalItem;
 import net.minecraft.world.level.block.Block;

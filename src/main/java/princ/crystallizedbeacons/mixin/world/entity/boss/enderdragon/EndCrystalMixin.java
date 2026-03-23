@@ -1,4 +1,4 @@
-package princ.crystallizedbeacons.mixin;
+package princ.crystallizedbeacons.mixin.world.entity.boss.enderdragon;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -23,8 +23,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import princ.crystallizedbeacons.util.EndCrystalAccessor;
-import princ.crystallizedbeacons.EndCrystalS2CPayload;
+import princ.crystallizedbeacons.mixin.world.level.block.entity.BeaconBlockEntityAccessor;
+import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
+import princ.crystallizedbeacons.network.protocol.world.entity.boss.enderdragon.EndCrystalS2CPayload;
 
 import java.util.Comparator;
 import java.util.List;
@@ -33,12 +34,13 @@ import java.util.List;
 public class EndCrystalMixin implements EndCrystalAccessor {
     @Unique
     @Nullable
-    private Entity crystallizedBeacons$targetEntity;
+    private Entity crystallizedBeacons$beamTarget;
 
     @Inject(method = "tick", at = @At("TAIL"))
     void tick(CallbackInfo callbackInfo) {
-        if (crystallizedBeacons$targetEntity != null && !crystallizedBeacons$targetEntity.isAlive()) {
-            crystallizedBeacons$targetEntity = null;
+        Mob previousEnemy = (Mob) this.crystallizedBeacons$beamTarget;
+        if (previousEnemy != null && !previousEnemy.isAlive()) {
+            previousEnemy = null;
         }
 
         EndCrystal endCrystal = (EndCrystal) (Object) this;
@@ -81,10 +83,10 @@ public class EndCrystalMixin implements EndCrystalAccessor {
         });
         Mob mob = mobs.stream().min(Comparator.comparingDouble(m -> m.distanceToSqr(endCrystal))).orElse(null);
 
-        if (crystallizedBeacons$targetEntity != mob) {
+        if (previousEnemy != mob) {
             crystallizedBeacons$sendToClients(endCrystal, mob);
         }
-        crystallizedBeacons$targetEntity = mob;
+        this.crystallizedBeacons$beamTarget = mob != null ? mob : previousEnemy;
 
         if (mob != null) {
             int i = switch (int_) {
@@ -126,12 +128,12 @@ public class EndCrystalMixin implements EndCrystalAccessor {
     }
 
     @Override
-    public @Nullable Entity crystallizedBeacons$getTargetEntity() {
-        return this.crystallizedBeacons$targetEntity;
+    public @Nullable Entity crystallizedBeacons$getBeamTarget() {
+        return this.crystallizedBeacons$beamTarget;
     }
 
     @Override
-    public void crystallizedBeacons$setTargetEntity(@Nullable Entity entity) {
-        this.crystallizedBeacons$targetEntity = entity;
+    public void crystallizedBeacons$setBeamTarget(@Nullable Entity entity) {
+        this.crystallizedBeacons$beamTarget = entity;
     }
 }

@@ -1,4 +1,4 @@
-package princ.crystallizedbeacons.mixin;
+package princ.crystallizedbeacons.mixin.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
@@ -18,14 +18,16 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import princ.crystallizedbeacons.util.EndCrystalAccessor;
+import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
 
 import java.util.stream.Stream;
+
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.RENDER_STATE_DATA_KEY_PREFIX;
 
 @Mixin(BeaconRenderer.class)
 public class BeaconRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> "hasBeamTarget");;
+    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> RENDER_STATE_DATA_KEY_PREFIX + "hasBeamTarget");
 
     @Inject(method = "extract", at = @At("HEAD"))
     private static <T extends BlockEntity & BeaconBeamOwner> void extract(T blockEntity, BeaconRenderState beaconRenderState, float f, Vec3 vec3, CallbackInfo callbackInfo) {
@@ -35,7 +37,7 @@ public class BeaconRendererMixin {
         if (level != null) {
             Stream<EndCrystal> endCrystalStream = level.getEntitiesOfClass(EndCrystal.class, aABB).stream();
             boolean bl = endCrystalStream.anyMatch(endCrystal ->
-                    ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getTargetEntity() != null
+                    ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget() != null
             );
             beaconRenderState.setData(HAS_BEAM_TARGET, bl);
         }

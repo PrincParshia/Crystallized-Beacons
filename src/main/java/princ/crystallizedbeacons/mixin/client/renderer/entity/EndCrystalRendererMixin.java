@@ -1,4 +1,4 @@
-package princ.crystallizedbeacons.mixin;
+package princ.crystallizedbeacons.mixin.client.renderer.entity;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,15 +22,16 @@ import org.joml.Vector3f;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import princ.crystallizedbeacons.util.EndCrystalAccessor;
+import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
+
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.RENDER_STATE_DATA_KEY_PREFIX;
 
 @Mixin(EndCrystalRenderer.class)
 public class EndCrystalRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Vector3f> END_CRYSTAL_BEAM_TARGET_POS = RenderStateDataKey.create(() -> "crystallized-beacons:endCrystalBeamTargetPos");
+    private static final RenderStateDataKey<Vector3f> BEAM_TARGET = RenderStateDataKey.create(() -> RENDER_STATE_DATA_KEY_PREFIX + "beamTarget");
 
     @ModifyExpressionValue(
             method = "submit(Lnet/minecraft/client/renderer/entity/state/EndCrystalRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
@@ -41,7 +42,7 @@ public class EndCrystalRendererMixin {
             )
     )
     private static Vec3 submit(Vec3 vec3, EndCrystalRenderState endCrystalRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
-        Vector3f vector3f = endCrystalRenderState.getData(END_CRYSTAL_BEAM_TARGET_POS);
+        Vector3f vector3f = endCrystalRenderState.getData(BEAM_TARGET);
         if (vector3f != null) {
             float i = endCrystalRenderState.ageInTicks;
             float y = -vector3f.y + EndCrystalRenderer.getY(i);
@@ -52,18 +53,21 @@ public class EndCrystalRendererMixin {
         return vec3;
     }
 
-    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/boss/enderdragon/EndCrystal;Lnet/minecraft/client/renderer/entity/state/EndCrystalRenderState;F)V", at = @At("TAIL"))
-    private void extractRenderState(EndCrystal endCrystal, EndCrystalRenderState renderState, float partialTick, CallbackInfo ci) {
-        Entity entity = ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getTargetEntity();
+    @Inject(
+            method = "extractRenderState(Lnet/minecraft/world/entity/boss/enderdragon/EndCrystal;Lnet/minecraft/client/renderer/entity/state/EndCrystalRenderState;F)V",
+            at = @At("TAIL")
+    )
+    void extractRenderState(EndCrystal endCrystal, EndCrystalRenderState endCrystalRenderState, float f, CallbackInfo callbackInfo) {
+        Entity entity = ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget();
 
-        if (entity == null) return;
-
-        renderState.setData(END_CRYSTAL_BEAM_TARGET_POS, entity.getPosition(partialTick)
-                .subtract(0, 2, 0)
-                .add(0, entity.getBbHeight() / 2, 0)
-                .subtract(endCrystal.getPosition(partialTick))
-                .toVector3f()
-        );
+        if (entity != null) {
+            endCrystalRenderState.setData(BEAM_TARGET, entity.getPosition(f)
+                    .subtract(0, 2, 0)
+                    .add(0, entity.getBbHeight() / 2, 0)
+                    .subtract(endCrystal.getPosition(f))
+                    .toVector3f()
+            );
+        }
     }
 
     @ModifyExpressionValue(
@@ -74,7 +78,7 @@ public class EndCrystalRendererMixin {
             )
     )
     boolean shouldRender(boolean bl, EndCrystal endCrystal) {
-        return bl || ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getTargetEntity() != null;
+        return bl || ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget() != null;
     }
 
     @Unique

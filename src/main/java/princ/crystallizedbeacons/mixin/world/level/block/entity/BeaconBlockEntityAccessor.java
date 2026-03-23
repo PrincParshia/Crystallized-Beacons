@@ -1,4 +1,4 @@
-package princ.crystallizedbeacons.mixin;
+package princ.crystallizedbeacons.mixin.world.level.block.entity;
 
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
