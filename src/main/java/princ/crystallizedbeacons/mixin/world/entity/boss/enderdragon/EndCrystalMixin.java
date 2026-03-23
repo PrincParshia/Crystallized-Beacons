@@ -38,11 +38,6 @@ public class EndCrystalMixin implements EndCrystalAccessor {
 
     @Inject(method = "tick", at = @At("TAIL"))
     void tick(CallbackInfo callbackInfo) {
-        Mob previousEnemy = (Mob) this.crystallizedBeacons$beamTarget;
-        if (previousEnemy != null && !previousEnemy.isAlive()) {
-            previousEnemy = null;
-        }
-
         EndCrystal endCrystal = (EndCrystal) (Object) this;
         Level level = endCrystal.level();
         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
@@ -74,21 +69,31 @@ public class EndCrystalMixin implements EndCrystalAccessor {
 
         double double_ = 16 * int_;
         double d = totalBlocks == 0 ? 0 : totalWeight / totalBlocks;
-        List<Mob> mobs = serverLevel.getEntitiesOfClass(Mob.class, endCrystal.getBoundingBox().inflate(double_), m -> {
-            if (d < 0.75 && (m instanceof WitherBoss || m instanceof Warden)) {
+        List<Mob> enemies = serverLevel.getEntitiesOfClass(Mob.class, endCrystal.getBoundingBox().inflate(double_), enemy -> {
+            if (d < 0.75 && (enemy instanceof WitherBoss || enemy instanceof Warden)) {
                 return false;
             }
 
-            return m instanceof Enemy && !(m instanceof EnderDragon) && m.isAlive() && !m.isInvulnerable();
+            return enemy instanceof Enemy && !(enemy instanceof EnderDragon) && enemy.isAlive() && !enemy.isInvulnerable();
         });
-        Mob mob = mobs.stream().min(Comparator.comparingDouble(m -> m.distanceToSqr(endCrystal))).orElse(null);
+        Mob enemy = enemies.stream().min(Comparator.comparingDouble(m -> m.distanceToSqr(endCrystal))).orElse(null);
+        Mob previousClosestEnemy = (Mob) this.crystallizedBeacons$beamTarget;
+        Mob closestEnemy;
 
-        if (previousEnemy != mob) {
-            crystallizedBeacons$sendToClients(endCrystal, mob);
+        if (enemy != null) {
+            closestEnemy = enemy;
+        } else if (previousClosestEnemy != null && previousClosestEnemy.isAlive()) {
+            closestEnemy = previousClosestEnemy;
+        } else {
+            closestEnemy = null;
         }
-        this.crystallizedBeacons$beamTarget = mob != null ? mob : previousEnemy;
 
-        if (mob != null) {
+        if (this.crystallizedBeacons$beamTarget != closestEnemy) {
+            crystallizedBeacons$sendToClients(endCrystal, closestEnemy);
+        }
+        this.crystallizedBeacons$beamTarget = closestEnemy;
+
+        if (enemy != null) {
             int i = switch (int_) {
                 case 2 -> 17;
                 case 3 -> 13;
@@ -99,7 +104,7 @@ public class EndCrystalMixin implements EndCrystalAccessor {
             if (endCrystal.tickCount % i == 0) {
                 DamageSource damageSource = serverLevel.damageSources().generic();
                 float f = (float) (4 + d * 16);
-                mob.hurtServer(serverLevel, damageSource, f);
+                enemy.hurtServer(serverLevel, damageSource, f);
             }
         }
     }
