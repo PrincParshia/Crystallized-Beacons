@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.entity.EndCrystalRenderer;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -26,12 +25,13 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
 
-import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.RENDER_STATE_DATA_KEY_PREFIX;
+import static net.minecraft.client.renderer.blockentity.BeaconRenderer.*;
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.dataKeyPrefix;
 
 @Mixin(EndCrystalRenderer.class)
 public class EndCrystalRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Vector3f> BEAM_TARGET = RenderStateDataKey.create(() -> RENDER_STATE_DATA_KEY_PREFIX + "beamTarget");
+    private static final RenderStateDataKey<Vector3f> BEAM_TARGET = RenderStateDataKey.create(() ->  dataKeyPrefix("beamTarget"));
 
     @ModifyExpressionValue(
             method = "submit(Lnet/minecraft/client/renderer/entity/state/EndCrystalRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
@@ -46,8 +46,10 @@ public class EndCrystalRendererMixin {
         if (vector3f != null) {
             float i = endCrystalRenderState.ageInTicks;
             float y = -vector3f.y + EndCrystalRenderer.getY(i);
+            poseStack.pushPose();
             poseStack.translate(vector3f.x, vector3f.y, vector3f.z);
-            submitCrystalBeams(-vector3f.x, y, -vector3f.z, i, poseStack, submitNodeCollector, BeaconRenderer.BEAM_LOCATION, -1, BeaconRenderer.SOLID_BEAM_RADIUS - 0.04F, BeaconRenderer.BEAM_GLOW_RADIUS);
+            submitCrystalBeams(-vector3f.x, y, -vector3f.z, i, poseStack, submitNodeCollector);
+            poseStack.popPose();
             return null;
         }
         return vec3;
@@ -82,13 +84,18 @@ public class EndCrystalRendererMixin {
     }
 
     @Unique
+    private static void submitCrystalBeams(float f, float g, float h, float i, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
+        submitCrystalBeams(f, g, h, i, poseStack, submitNodeCollector, BEAM_LOCATION, -1, SOLID_BEAM_RADIUS - 0.06F, BEAM_GLOW_RADIUS);
+    }
+
+    @Unique
     private static void submitCrystalBeams(float f, float g, float h, float i, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Identifier identifier, int j, float p, float q) {
         float k = Mth.sqrt(f * f + h * h);
         float l = Mth.sqrt(f * f + g * g + h * h);
         poseStack.pushPose();
         poseStack.translate(0.0F, 2.0F, 0.0F);
-        poseStack.mulPose(Axis.YP.rotation((float)(-Math.atan2(h, f)) - ((float)Math.PI / 2F)));
-        poseStack.mulPose(Axis.XP.rotation((float)(-Math.atan2(k, g)) - ((float)Math.PI / 2F)));
+        poseStack.mulPose(Axis.YP.rotation((float) (-Math.atan2(h, f)) - ((float) Math.PI / 2F)));
+        poseStack.mulPose(Axis.XP.rotation((float) (-Math.atan2(k, g)) - ((float) Math.PI / 2F)));
 
         float n = -i;
         float o = Mth.frac(n * 0.2F - (float) Mth.floor(n * 0.1F));
