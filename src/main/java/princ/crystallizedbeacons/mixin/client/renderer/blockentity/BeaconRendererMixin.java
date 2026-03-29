@@ -20,14 +20,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
 
-import java.util.stream.Stream;
+import java.util.List;
 
-import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.RENDER_STATE_DATA_KEY_PREFIX;
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.dataKeyPrefix;
 
 @Mixin(BeaconRenderer.class)
 public class BeaconRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> RENDER_STATE_DATA_KEY_PREFIX + "hasBeamTarget");
+    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> dataKeyPrefix("hasBeamTarget"));
 
     @Inject(method = "extract", at = @At("HEAD"))
     private static <T extends BlockEntity & BeaconBeamOwner> void extract(T blockEntity, BeaconRenderState beaconRenderState, float f, Vec3 vec3, CallbackInfo callbackInfo) {
@@ -35,10 +35,8 @@ public class BeaconRendererMixin {
         BlockPos blockPos = blockEntity.getBlockPos().above();
         AABB aABB = new AABB(blockPos);
         if (level != null) {
-            Stream<EndCrystal> endCrystalStream = level.getEntitiesOfClass(EndCrystal.class, aABB).stream();
-            boolean bl = endCrystalStream.anyMatch(endCrystal ->
-                    ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget() != null
-            );
+            List<EndCrystal> endCrystals = level.getEntitiesOfClass(EndCrystal.class, aABB);
+            boolean bl = endCrystals.stream().anyMatch(endCrystal -> ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget() != null);
             beaconRenderState.setData(HAS_BEAM_TARGET, bl);
         }
     }
@@ -48,7 +46,7 @@ public class BeaconRendererMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    void submitCrystalBeam(BeaconRenderState beaconRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo callbackInfo) {
+    void submit(BeaconRenderState beaconRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo callbackInfo) {
         if (Boolean.TRUE.equals(beaconRenderState.getData(HAS_BEAM_TARGET))) {
             callbackInfo.cancel();
         }

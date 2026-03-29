@@ -36,6 +36,16 @@ public class EndCrystalMixin implements EndCrystalAccessor {
     @Nullable
     private Entity crystallizedBeacons$beamTarget;
 
+    @Override
+    public @Nullable Entity crystallizedBeacons$getBeamTarget() {
+        return this.crystallizedBeacons$beamTarget;
+    }
+
+    @Override
+    public void crystallizedBeacons$setBeamTarget(@Nullable Entity entity) {
+        this.crystallizedBeacons$beamTarget = entity;
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     void tick(CallbackInfo callbackInfo) {
         EndCrystal endCrystal = (EndCrystal) (Object) this;
@@ -48,7 +58,13 @@ public class EndCrystalMixin implements EndCrystalAccessor {
                 !(serverLevel.getBlockEntity(blockPos) instanceof BeaconBlockEntity beaconBlockEntity)) return;
 
         int int_ = ((BeaconBlockEntityAccessor) beaconBlockEntity).levels();
-        if (int_ <= 0) return;
+        if (int_ <= 0) {
+            if (this.crystallizedBeacons$beamTarget != null) {
+                crystallizedBeacons$sendToClients(endCrystal, null);
+                this.crystallizedBeacons$beamTarget = null;
+            }
+            return;
+        }
 
         double totalWeight = 0;
         int totalBlocks = 0;
@@ -82,7 +98,7 @@ public class EndCrystalMixin implements EndCrystalAccessor {
 
         if (enemy != null) {
             closestEnemy = enemy;
-        } else if (previousClosestEnemy != null && previousClosestEnemy.isAlive()) {
+        } else if (previousClosestEnemy != null && previousClosestEnemy.isAlive() && this.canHurtEnemy(previousClosestEnemy, d)) {
             closestEnemy = previousClosestEnemy;
         } else {
             closestEnemy = null;
@@ -132,13 +148,8 @@ public class EndCrystalMixin implements EndCrystalAccessor {
         return d * ((double) i / 4);
     }
 
-    @Override
-    public @Nullable Entity crystallizedBeacons$getBeamTarget() {
-        return this.crystallizedBeacons$beamTarget;
-    }
-
-    @Override
-    public void crystallizedBeacons$setBeamTarget(@Nullable Entity entity) {
-        this.crystallizedBeacons$beamTarget = entity;
+    @Unique
+    boolean canHurtEnemy(Entity entity, double d) {
+        return d > 0.75 && (entity instanceof WitherBoss || entity instanceof Warden);
     }
 }
