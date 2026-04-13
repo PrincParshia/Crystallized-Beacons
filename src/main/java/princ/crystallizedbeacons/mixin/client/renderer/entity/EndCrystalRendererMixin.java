@@ -96,15 +96,13 @@ public class EndCrystalRendererMixin {
         poseStack.translate(0.0F, 2.0F, 0.0F);
         poseStack.mulPose(Axis.YP.rotation((float) (-Math.atan2(h, f)) - ((float) Math.PI / 2F)));
         poseStack.mulPose(Axis.XP.rotation((float) (-Math.atan2(k, g)) - ((float) Math.PI / 2F)));
-
+        poseStack.mulPose(Axis.ZN.rotationDegrees(i * 2.25F - 45.0F));
         float n = -i;
         float o = Mth.frac(n * 0.2F - (float) Mth.floor(n * 0.1F));
         float z = -1.0F + o;
         float aa = l * 1.8F + z;
-
         float s = 0.0F;
         float t = l;
-
         submitNodeCollector.submitCustomGeometry(poseStack, RenderType.beaconBeam(resourceLocation, false), (pose, vertexConsumer) -> renderPart(pose, vertexConsumer, p, j, s, t, 0.0F, 1.0F, z, aa));
         submitNodeCollector.submitCustomGeometry(poseStack, RenderType.beaconBeam(resourceLocation, true), (pose, vertexConsumer) -> renderPart(pose, vertexConsumer, q, ARGB.color(32, j), s, t, 0.0F, 1.0F, z, aa));
         poseStack.popPose();
