@@ -26,12 +26,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAccessor;
 
 import static net.minecraft.client.renderer.blockentity.BeaconRenderer.*;
-import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.dataKeyPrefix;
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.withDataKeyPrefix;
 
 @Mixin(EndCrystalRenderer.class)
 public class EndCrystalRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Vector3f> BEAM_TARGET = RenderStateDataKey.create(() ->  dataKeyPrefix("beamTarget"));
+    private static final RenderStateDataKey<Vector3f> BEAM_TARGET = RenderStateDataKey.create(() ->  withDataKeyPrefix("beamTarget"));
 
     @ModifyExpressionValue(
             method = "submit(Lnet/minecraft/client/renderer/entity/state/EndCrystalRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
@@ -61,7 +61,6 @@ public class EndCrystalRendererMixin {
     )
     void extractRenderState(EndCrystal endCrystal, EndCrystalRenderState endCrystalRenderState, float f, CallbackInfo callbackInfo) {
         Entity entity = ((EndCrystalAccessor) endCrystal).crystallizedBeacons$getBeamTarget();
-
         if (entity != null) {
             endCrystalRenderState.setData(BEAM_TARGET, entity.getPosition(f)
                     .subtract(0, 2, 0)
@@ -96,15 +95,13 @@ public class EndCrystalRendererMixin {
         poseStack.translate(0.0F, 2.0F, 0.0F);
         poseStack.mulPose(Axis.YP.rotation((float) (-Math.atan2(h, f)) - ((float) Math.PI / 2F)));
         poseStack.mulPose(Axis.XP.rotation((float) (-Math.atan2(k, g)) - ((float) Math.PI / 2F)));
-
+        poseStack.mulPose(Axis.ZN.rotationDegrees(i * 2.25F - 45.0F));
         float n = -i;
         float o = Mth.frac(n * 0.2F - (float) Mth.floor(n * 0.1F));
         float z = -1.0F + o;
         float aa = l * 1.8F + z;
-
         float s = 0.0F;
         float t = l;
-
         submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.beaconBeam(identifier, false), (pose, vertexConsumer) -> renderPart(pose, vertexConsumer, p, j, s, t, 0.0F, 1.0F, z, aa));
         submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.beaconBeam(identifier, true), (pose, vertexConsumer) -> renderPart(pose, vertexConsumer, q, ARGB.color(32, j), s, t, 0.0F, 1.0F, z, aa));
         poseStack.popPose();

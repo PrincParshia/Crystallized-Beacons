@@ -9,7 +9,7 @@ public class CrystallizedBeaconsConstants {
         return Identifier.fromNamespaceAndPath(NAMESPACE, string);
     }
 
-    public static String dataKeyPrefix(String string) {
+    public static String withDataKeyPrefix(String string) {
         Identifier identifier = withDefaultNamespace(string);
         return identifier.getNamespace() + ":" + identifier.getPath();
     }

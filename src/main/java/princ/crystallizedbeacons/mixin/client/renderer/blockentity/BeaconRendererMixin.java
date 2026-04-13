@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,12 +22,12 @@ import princ.crystallizedbeacons.util.world.entity.boss.enderdragon.EndCrystalAc
 
 import java.util.List;
 
-import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.dataKeyPrefix;
+import static princ.crystallizedbeacons.CrystallizedBeaconsConstants.withDataKeyPrefix;
 
 @Mixin(BeaconRenderer.class)
 public class BeaconRendererMixin {
     @Unique
-    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> dataKeyPrefix("hasBeamTarget"));
+    private static final RenderStateDataKey<Boolean> HAS_BEAM_TARGET = RenderStateDataKey.create(() -> withDataKeyPrefix("hasBeamTarget"));
 
     @Inject(method = "extract", at = @At("HEAD"))
     private static <T extends BlockEntity & BeaconBeamOwner> void extract(T blockEntity, BeaconRenderState beaconRenderState, float f, Vec3 vec3, CallbackInfo callbackInfo) {
